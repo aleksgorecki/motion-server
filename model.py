@@ -1,5 +1,6 @@
 import tensorflow as tf
 import os
+import keras_preprocessing.image
 
 
 class BitmapModel:
@@ -63,10 +64,11 @@ def fit_model(model: tf.keras.Sequential, epochs: int, train_flow, callbacks: li
 
     model.fit(train_flow, epochs=epochs, validation_data=val_flow, callbacks=callbacks)
 
-def run_prediction(model: tf.keras.Sequential, weights_path: str, input_image, labels: list):
+def run_prediction(model: tf.keras.Sequential, weights_path: str, input_image: str, labels: list):
 
     model.load_weights(weights_path)
     
+    keras_preprocessing.image.load_img(input_image, color_mode="grayscale", target_size=(3, 150))
     predictions = model.predict(input_image)
 
     for idx, pred in enumerate(predictions):

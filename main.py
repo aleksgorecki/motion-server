@@ -4,11 +4,15 @@ import os
 import pathlib
 import json
 import time
+from model import *
+from data_processing import *
 
 
 DATASET_DIR = "dataset"
 
 app = Flask(__name__)
+
+
 
 
 @app.route("/")
@@ -32,6 +36,22 @@ def new_recording():
     with open(path_to_save, "w") as file:
         json.dump(data, file, indent=4)
     
+    return "OK"
+
+@app.route("/predict", methods=["POST"])
+def predict():
+
+    temp_filename = "./received_bitmap_latest.bmp"
+
+    data = request.json
+    data_arr = json_data_to_array(data)
+    normalized_arr = normalize_amplitude_values(data_arr)
+    filtered_arr = filter_high_frequency_oscillations(normalized_arr, 15)
+
+    save_array_to_bitmap(filtered_arr, temp_filename)
+
+    model = BitmapModel.get_prototype()
+    run_prediction(model, "./weights_latest_bitmap", temp_filename, BitmapModel.labels)
     return "OK"
 
 

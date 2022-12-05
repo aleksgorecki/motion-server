@@ -1,9 +1,9 @@
 import numpy as np
 from PIL import Image
 import os
-from motion_util import motion_json_to_object
 from matplotlib import pyplot as plt
 import json
+import io
 
 
 def plot_motion(response_data, savefile):
@@ -63,6 +63,13 @@ def dataset_to_bitmap(dataset_path, output_path):
             output_sample_path = os.path.join(output_path, class_dir, str(sample_json).replace("json", "bmp") )
             save_array_to_bitmap(filtered_sample, output_sample_path)
 
+
+def save_bitmap_to_memory(arr) -> io.BytesIO:
+    scaled_arr = np.array(arr * 255, dtype=np.uint8)
+    im = Image.fromarray(scaled_arr)
+    with io.BytesIO as output:
+        im.save(output, format="BMP")
+    return output.content
 
 if __name__ == "__main__":
     dataset_to_bitmap("./dataset", "./dataset_bitmap")
