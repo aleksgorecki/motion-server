@@ -1,6 +1,7 @@
 import tensorflow as tf
 import os
 import keras_preprocessing.image
+import numpy as np
 
 
 class BitmapModel:
@@ -37,7 +38,7 @@ def setup_data_flow(dataset_path: str, val_split: float = 0.2):
 
     train_flow = train_generator.flow_from_directory(directory=dataset_path,
                                                     target_size=(3, 150),
-                                                    color_mode="rgba",
+                                                    color_mode="grayscale",
                                                     class_mode='categorical',
                                                     batch_size=8,
                                                     shuffle=True,
@@ -46,7 +47,7 @@ def setup_data_flow(dataset_path: str, val_split: float = 0.2):
 
     val_flow = train_generator.flow_from_directory(directory=dataset_path,
                                                     target_size=(3, 150),
-                                                    color_mode="rgba",
+                                                    color_mode="grayscale",
                                                     class_mode='categorical',
                                                     batch_size=8,
                                                     shuffle=True,
@@ -64,15 +65,19 @@ def fit_model(model: tf.keras.Sequential, epochs: int, train_flow, callbacks: li
 
     model.fit(train_flow, epochs=epochs, validation_data=val_flow, callbacks=callbacks)
 
-def run_prediction(model: tf.keras.Sequential, weights_path: str, input_image: str, labels: list):
+def run_prediction(model: tf.keras.Sequential, input_image_path: str, labels: list):
 
-    model.load_weights(weights_path)
-    
-    keras_preprocessing.image.load_img(input_image, color_mode="grayscale", target_size=(3, 150))
-    predictions = model.predict(input_image)
+    input_image = keras_preprocessing.image.load_img(input_image_path, color_mode="grayscale", target_size=(3, 150))
+    input_arr = tf.keras.utils.img_to_array(input_image)
+    input_arr = np.expand_dims(input_arr, axis=0)
+    predictions = model(input_arr)
 
-    for idx, pred in enumerate(predictions):
-        print(f"{labels[idx]} {pred}")
+    argmax = np.argmax(predictions[0])
+
+    print(f"Most likely: {labels[argmax]} {round(float(max(predictions[0])), 3)}")
+
+    for idx, pred in enumerate(predictions[0]):
+        print(f"{labels[idx]} {round(float(pred), 3)}")
 
 
 if __name__ == "__main__":
@@ -88,6 +93,6 @@ if __name__ == "__main__":
 
     train_flow, val_flow = setup_data_flow(BITMAP_DATASET_PATH)
 
-    fit_model(model, 10, train_flow, None, val_flow)
+    fit_model(model, 40, train_flow, None, val_flow)
 
     model.save_weights("./weights_latest_bitmap.h5", overwrite=True, save_format="h5")

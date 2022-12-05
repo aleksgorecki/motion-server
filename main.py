@@ -8,11 +8,15 @@ from model import *
 from data_processing import *
 
 
-DATASET_DIR = "dataset"
+
 
 app = Flask(__name__)
 
+DATASET_DIR = "dataset"
+temp_filename = "./received_bitmap_latest.bmp"
 
+model = BitmapModel.get_prototype()
+model.load_weights("./weights_latest_bitmap.h5")
 
 
 @app.route("/")
@@ -41,8 +45,6 @@ def new_recording():
 @app.route("/predict", methods=["POST"])
 def predict():
 
-    temp_filename = "./received_bitmap_latest.bmp"
-
     data = request.json
     data_arr = json_data_to_array(data)
     normalized_arr = normalize_amplitude_values(data_arr)
@@ -51,12 +53,11 @@ def predict():
     save_array_to_bitmap(filtered_arr, temp_filename)
 
     model = BitmapModel.get_prototype()
-    run_prediction(model, "./weights_latest_bitmap", temp_filename, BitmapModel.labels)
+    run_prediction(model, temp_filename, BitmapModel.labels)
     return "OK"
 
 
 if __name__ == "__main__":
-
     if os.path.exists(DATASET_DIR):
         if (pathlib.Path(DATASET_DIR)).is_file():
             raise Exception("Dataset dir is a file")
