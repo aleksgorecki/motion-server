@@ -53,6 +53,8 @@ def predict():
     save_array_to_bitmap(filtered_arr, temp_filename)
 
     model = BitmapModel.get_prototype()
+
+    print('\n')
     run_prediction(model, temp_filename, BitmapModel.labels)
     return "OK"
 
