@@ -1,1 +1,3 @@
 /motion-venv
+/dataset*
+*.pyc
