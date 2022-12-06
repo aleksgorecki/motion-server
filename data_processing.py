@@ -23,27 +23,35 @@ def motion_json_to_object(json_path):
         return json.load(json_file)
 
 def json_data_to_array(json_data):
-    x_row = np.array(json_data["x"])
-    y_row = np.array(json_data["y"])
-    z_row = np.array(json_data["z"])
-    return np.array([x_row, y_row, z_row])
+    x = np.array(json_data["x"])
+    y = np.array(json_data["y"])
+    z = np.array(json_data["z"])
+
+    ret = np.zeros(shape=(1, 150, 3), dtype=float)
+    for sample_no in range(0, len(x) if len(x) <= 150 else 150):
+        ret[0][sample_no][0] = x[sample_no]
+        ret[0][sample_no][1] = y[sample_no]
+        ret[0][sample_no][2] = z[sample_no]
+
+    return ret
 
 def normalize_amplitude_values(arr):
     global_min = arr.min()
     global_max = arr.max()
     return (((arr - global_min) / (global_max - global_min)))
 
-def filter_high_frequency_oscillations(arr, ones_len):
-    ret_arr = np.empty(dtype=float, shape=arr.shape)
-    for row_idx, row in enumerate(arr):
-        filtered_row = np.convolve(row, np.ones(ones_len), 'same') / ones_len
-        ret_arr[row_idx] = filtered_row
-    return ret_arr
+# def filter_high_frequency_oscillations(arr, ones_len):
+#     ret_arr = np.empty(dtype=float, shape=arr.shape)
+#     for row_idx, row in enumerate(arr):
+#         filtered_row = np.convolve(row, np.ones(ones_len), 'same') / ones_len
+#         ret_arr[row_idx] = np.array(filtered_row)
+#     return ret_arr
 
 def save_array_to_bitmap(arr, savefile):
+
     scaled_arr = np.array(arr * 255, dtype=np.uint8)
-    im = Image.fromarray(scaled_arr)
-    im.save(savefile)
+    im = Image.fromarray(scaled_arr, mode="RGB")
+    im.save(savefile, format="BMP")
 
 def dataset_to_bitmap(dataset_path, output_path):
     
@@ -58,18 +66,11 @@ def dataset_to_bitmap(dataset_path, output_path):
             
             sample_data_arr = json_data_to_array(sample_data)
             normalized_sample = normalize_amplitude_values(sample_data_arr)
-            filtered_sample = filter_high_frequency_oscillations(normalized_sample, 15)
+            # filtered_sample = filter_high_frequency_oscillations(normalized_sample, 15)
             
             output_sample_path = os.path.join(output_path, class_dir, str(sample_json).replace("json", "bmp") )
-            save_array_to_bitmap(filtered_sample, output_sample_path)
+            save_array_to_bitmap(normalized_sample, output_sample_path)
 
-
-def save_bitmap_to_memory(arr) -> io.BytesIO:
-    scaled_arr = np.array(arr * 255, dtype=np.uint8)
-    im = Image.fromarray(scaled_arr)
-    with io.BytesIO as output:
-        im.save(output, format="BMP")
-    return output.content
 
 if __name__ == "__main__":
     dataset_to_bitmap("./dataset", "./dataset_bitmap")

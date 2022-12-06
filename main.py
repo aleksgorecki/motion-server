@@ -48,11 +48,9 @@ def predict():
     data = request.json
     data_arr = json_data_to_array(data)
     normalized_arr = normalize_amplitude_values(data_arr)
-    filtered_arr = filter_high_frequency_oscillations(normalized_arr, 15)
+    # filtered_arr = filter_high_frequency_oscillations(normalized_arr, 15)
 
-    save_array_to_bitmap(filtered_arr, temp_filename)
-
-    model = BitmapModel.get_prototype()
+    save_array_to_bitmap(normalized_arr, temp_filename)
 
     print('\n')
     run_prediction(model, temp_filename, BitmapModel.labels)
