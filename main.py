@@ -46,11 +46,10 @@ def new_recording():
 def predict():
 
     data = request.json
-    data_arr = json_data_to_array(data)
-    normalized_arr = normalize_amplitude_values(data_arr)
-    # filtered_arr = filter_high_frequency_oscillations(normalized_arr, 15)
-
-    save_array_to_bitmap(normalized_arr, temp_filename)
+    motion = Motion.from_json(data)
+    motion.crop(motion.get_global_extremum_sample(), 40)
+    motion.filter_high_frequencies()
+    motion.save_to_bitmap(temp_filename)
 
     print('\n')
     run_prediction(model, temp_filename, BitmapModel.labels)

@@ -12,17 +12,17 @@ class BitmapModel:
     def get_prototype() -> tf.keras.Sequential:
 
         model = tf.keras.Sequential(layers=[
-            tf.keras.Input(shape=(1, 150, 3)),
+            tf.keras.Input(shape=(1, 80, 3)),
+
+            tf.keras.layers.Conv1D(4, kernel_size=(1), strides=(1), activation="relu", padding="same"),
+            tf.keras.layers.Dropout(rate=0.2),
+            tf.keras.layers.MaxPool2D(pool_size=1, padding="same"),
+
+            tf.keras.layers.Conv1D(8, kernel_size=(1), strides=(1), activation="relu", padding="same"),
+            tf.keras.layers.Dropout(rate=0.2),
+            tf.keras.layers.MaxPool2D(pool_size=1, padding="same"),
 
             tf.keras.layers.Conv1D(16, kernel_size=(1), strides=(1), activation="relu", padding="same"),
-            tf.keras.layers.Dropout(rate=0.2),
-            tf.keras.layers.MaxPool2D(pool_size=1, padding="same"),
-
-            tf.keras.layers.Conv1D(32, kernel_size=(1), strides=(1), activation="relu", padding="same"),
-            tf.keras.layers.Dropout(rate=0.2),
-            tf.keras.layers.MaxPool2D(pool_size=1, padding="same"),
-
-            tf.keras.layers.Conv1D(64, kernel_size=(1), strides=(1), activation="relu", padding="same"),
             tf.keras.layers.Dropout(rate=0.2),
             tf.keras.layers.MaxPool2D(pool_size=1, padding="same"),
 
@@ -37,7 +37,7 @@ def setup_data_flow(dataset_path: str, val_split: float = 0.2):
     train_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255, validation_split=val_split)
 
     train_flow = train_generator.flow_from_directory(directory=dataset_path,
-                                                    target_size=(1, 150),
+                                                    target_size=(1, 80),
                                                     color_mode="rgb",
                                                     class_mode='categorical',
                                                     batch_size=8,
@@ -46,7 +46,7 @@ def setup_data_flow(dataset_path: str, val_split: float = 0.2):
                                                     )
 
     val_flow = train_generator.flow_from_directory(directory=dataset_path,
-                                                    target_size=(1, 150),
+                                                    target_size=(1, 80),
                                                     color_mode="rgb",
                                                     class_mode='categorical',
                                                     batch_size=8,
@@ -67,9 +67,10 @@ def fit_model(model: tf.keras.Sequential, epochs: int, train_flow, callbacks: li
 
 def run_prediction(model: tf.keras.Sequential, input_image_path: str, labels: list):
 
-    input_image = keras_preprocessing.image.load_img(input_image_path, color_mode="rgb", target_size=(1, 150))
+    input_image = keras_preprocessing.image.load_img(input_image_path, color_mode="rgb", target_size=(1, 80))
     input_arr = tf.keras.utils.img_to_array(input_image)
     input_arr = np.expand_dims(input_arr, axis=0)
+
     predictions = model(input_arr)
 
     argmax = np.argmax(predictions[0])
