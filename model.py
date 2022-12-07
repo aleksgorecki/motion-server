@@ -14,10 +14,10 @@ class BitmapModel:
         model = tf.keras.Sequential(layers=[
             tf.keras.Input(shape=(1, 80, 3)),
 
-            tf.keras.layers.Conv1D(8, kernel_size=(1), strides=(1), activation="relu"),
+            tf.keras.layers.Conv1D(8, kernel_size=(3), strides=(1), activation="relu"),
             tf.keras.layers.Dropout(rate=0.2),
 
-            tf.keras.layers.Conv1D(16, kernel_size=(1), strides=(1), activation="relu"),
+            tf.keras.layers.Conv1D(16, kernel_size=(3), strides=(1), activation="relu"),
             tf.keras.layers.Dropout(rate=0.2),
 
             tf.keras.layers.Flatten(),
