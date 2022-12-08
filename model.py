@@ -69,10 +69,10 @@ def run_prediction(model: tf.keras.Sequential, input_image_path: str, labels: li
 
     argmax = np.argmax(predictions[0])
 
-    print(f"Most likely: {labels[argmax]} {round(float(max(predictions[0])), 3)}")
+    print(f"Most likely: {labels[argmax]} {max(predictions[0])}")
 
     for idx, pred in enumerate(predictions[0]):
-        print(f"{labels[idx]} {round(float(pred), 3)}")
+        print(f"{labels[idx]} {pred}")
 
 
 if __name__ == "__main__":

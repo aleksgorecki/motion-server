@@ -51,8 +51,8 @@ def predict():
     motion.filter_high_frequencies()
     motion.save_to_bitmap(temp_filename)
 
-    print('\n')
     run_prediction(model, temp_filename, BitmapModel.labels)
+    
     return "OK"
 
 
