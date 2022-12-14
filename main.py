@@ -51,9 +51,13 @@ def predict():
     motion.filter_high_frequencies()
     motion.save_to_bitmap(temp_filename)
 
-    run_prediction(model, temp_filename, BitmapModel.labels)
+    prediction_result = run_prediction(model, temp_filename, BitmapModel.labels)
     
-    return "OK"
+    return app.response_class(
+        response=json.dumps(prediction_result),
+        status=200,
+        mimetype="application/json"
+    )
 
 
 if __name__ == "__main__":

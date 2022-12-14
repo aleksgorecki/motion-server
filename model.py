@@ -67,12 +67,20 @@ def run_prediction(model: tf.keras.Sequential, input_image_path: str, labels: li
 
     predictions = model(input_arr)
 
+    print(predictions)
+    
     argmax = np.argmax(predictions[0])
 
-    print(f"Most likely: {labels[argmax]} {max(predictions[0])}")
+    print(f"Most likely: {labels[argmax]} {predictions[0][argmax]}")
 
     for idx, pred in enumerate(predictions[0]):
         print(f"{labels[idx]} {pred}")
+
+    result_dict = dict()
+    result_dict.update({"class": labels[argmax]})
+    result_dict.update({"result": float(predictions[0][argmax])})
+
+    return result_dict
 
 
 if __name__ == "__main__":
@@ -88,6 +96,6 @@ if __name__ == "__main__":
 
     train_flow, val_flow = setup_data_flow(BITMAP_DATASET_PATH)
 
-    fit_model(model, 70, train_flow, None, val_flow)
+    fit_model(model, 40, train_flow, None, val_flow)
 
     model.save_weights("./weights_latest_bitmap.h5", overwrite=True, save_format="h5")
