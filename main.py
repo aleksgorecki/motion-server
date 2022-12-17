@@ -12,11 +12,7 @@ from data_processing import *
 
 app = Flask(__name__)
 
-DATASET_DIR = "dataset"
-temp_filename = "./received_bitmap_latest.bmp"
 
-model = BitmapModel.get_prototype()
-model.load_weights("./weights_latest_bitmap.h5")
 
 
 @app.route("/")
@@ -47,9 +43,9 @@ def predict():
 
     data = request.json
     motion = Motion.from_json(data)
-    motion.crop(motion.get_global_extremum_sample(), 40)
+    motion.crop(motion.get_global_extremum_position(), 40)
     motion.filter_high_frequencies()
-    motion.save_to_bitmap(temp_filename)
+    motion.save_as_bitmap(temp_filename)
 
     prediction_result = run_prediction(model, temp_filename, BitmapModel.labels)
     
@@ -59,6 +55,11 @@ def predict():
         mimetype="application/json"
     )
 
+DATASET_DIR = "dataset"
+temp_filename = "./received_bitmap_latest.bmp"
+
+model = BitmapModel.get_prototype()
+model.load_weights("./weights_latest_bitmap.h5")
 
 if __name__ == "__main__":
     if os.path.exists(DATASET_DIR):
