@@ -1,7 +1,9 @@
 from __future__ import annotations
+import json
 import numpy as np
 from PIL import Image
 from numpy.typing import NDArray, ArrayLike
+from matplotlib import pyplot as plt
 
 
 class Motion:
@@ -40,7 +42,6 @@ class Motion:
         return self.samples[0][:,2]
 
     def get_global_extremum_position(self) -> int:
-
         max_pos = np.unravel_index(self.samples.argmax(), shape=self.samples.shape)
         max_val = self.samples[max_pos]
         min_pos =  np.unravel_index(self.samples.argmin(), shape=self.samples.shape)
@@ -69,7 +70,7 @@ class Motion:
         cropped_arr[0][0 + lower_padding:2 * half_span - upper_padding][:] = self.samples[0][lower_bound:upper_bound][:]
         self.samples = cropped_arr
 
-    def scale_values(self, factor: int) -> None:
+    def scale_values(self, factor: float) -> None:
         self.samples = self.samples * factor
 
     def horizontal_shift(self, ratio: float):
@@ -81,27 +82,42 @@ class Motion:
             new_arr[0][threshold_idx:] = self.samples[0][0:len(self) - threshold_idx]
         self.samples = new_arr
 
-    def average_filter(self, kernel_size: int = 5):
+    def low_pass_filter(self, kernel_size: int = 5):
         axis_columns = (self.get_x(), self.get_y(), self.get_z())
-        filtered_columns = []
         kernel = np.ones(kernel_size) / kernel_size
-        for column in axis_columns:
-            filtered_columns.append(np.convolve(column, kernel, mode="same"))
-
+        filtered_columns = [np.convolve(column, kernel, mode="same") for column in axis_columns]
         self.samples = np.array([np.column_stack(filtered_columns)])
-
 
     def get_array(self) -> NDArray:
         return np.array(self.samples)
 
+    def save_as_json(self, savefile: str) -> None:
+        json_object = dict({
+            "x": self.get_x().tolist(),
+            "y": self.get_y().tolist(),
+            "z": self.get_z().tolist()
+        })
+        with open(savefile, "w") as of:
+            json.dump(json_object, of, indent=4)
+
     def save_as_bitmap(self, savefile: str) -> None:
         im_array = np.array(self.samples)
 
-        im_min = min(im_array)
-        im_max = max(im_array)
+        im_min = im_array.min()
+        im_max = im_array.max()
 
         scaled_arr = ((im_array - im_min) / (im_max - im_min)) * 255
         scaled_arr = np.array(scaled_arr, dtype=np.uint8)
 
         im = Image.fromarray(scaled_arr, mode="RGB")
         im.save(savefile, format="BMP")
+
+    def save_as_plot(self, savefile: str):
+        fig, ax = plt.subplots()
+        axis_names = ["x", "y", "z"]
+        for idx, motion_axis in enumerate((self.get_x(), self.get_y(), self.get_z())):
+            ax.plot(range(len(self)), motion_axis, label=axis_names[idx])
+        ax.legend()
+        ax.set_ylabel("acceleration m/s^2")
+        ax.set_xlabel("sample number")
+        fig.savefig(savefile)

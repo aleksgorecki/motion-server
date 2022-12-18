@@ -98,6 +98,4 @@ if __name__ == "__main__":
 
     fit_model(model, 40, train_flow, None, val_flow)
 
-    a = tf.data.Dataset.from_tensors()
-    a
     model.save_weights("./weights_latest_bitmap.h5", overwrite=True, save_format="h5")
