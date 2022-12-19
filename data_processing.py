@@ -169,20 +169,28 @@ class MotionDataset:
             second.update({class_name: samples[:int(ratio * len(samples))]})
         return MotionDataset(first), MotionDataset(second)
 
+    def normalize(self) -> None:
+        for class_name in self.dataset.keys():
+            for n, _ in enumerate(self.dataset[class_name]):
+                self.dataset[class_name][n].normalize_global()
+
 
 if __name__ == "__main__":
-    d = MotionDataset.from_json("./dataset")
-    d.crop_samples(100)
-    d.even_sample_numbers_in_classes()
-    # d.crop_samples(100)
-    # datasets = d.split(0.2)
-    # train, val = datasets
-    #
-    # train.augment_dataset([-0.15, -0.1, -0.05, 0.05, 0.1, 0.15], [5, 10])
-    # train.to_hdf5("./prototype_augmented_dataset.hdf5")
-    # train.to_plots("./dataset_augmented_plots")
-    #
-    # val.augment_dataset([-0.15, -0.1, -0.05, 0.05, 0.1, 0.15], [5, 10])
-    # val.to_hdf5("./prototype_augmented_dataset_val.hdf5")
-    # val.to_plots("./dataset_augmented_plots_val")
-    data = d.to_tf_dataset()
+    d = MotionDataset.from_json("./basic2")
+    d.crop_samples(120)
+    datasets = d.split(0.2)
+    train, val = datasets
+
+    train.to_hdf5("./basic_dataset.hdf5")
+    train.to_plots("./basic_plots")
+
+    val.to_hdf5("./basic_dataset_val.hdf5")
+    val.to_plots("./basic_plots_val")
+
+    train.normalize()
+    train.to_hdf5("./basic_dataset_norm.hdf5")
+    train.to_plots("./basic_plots_norm")
+
+    val.normalize()
+    val.to_hdf5("./basic_dataset_val_norm.hdf5")
+    val.to_plots("./basic_plots_val_norm")

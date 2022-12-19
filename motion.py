@@ -29,6 +29,15 @@ class Motion:
         )
 
     @staticmethod
+    def from_separate_axes(x: NDArray, y: NDArray, z: NDArray):
+        three_channel_array = np.empty(shape=(1, len(x), 3))
+        for sample in range(len(x)):
+            three_channel_array[0][sample][0] = x[sample]
+            three_channel_array[0][sample][1] = y[sample]
+            three_channel_array[0][sample][2] = z[sample]
+        return Motion(three_channel_array)
+
+    @staticmethod
     def from_bitmap(im: PIL.Image.Image):
         arr = np.asarray(im, dtype=float)
         return Motion(arr)
@@ -118,6 +127,15 @@ class Motion:
 
         im = Image.fromarray(scaled_arr, mode="RGB")
         im.save(savefile, format="BMP")
+
+    def normalize_separate(self):
+        normalized_axes = []
+        for axis in (self.get_x(), self.get_y(), self.get_z()):
+            normalized_axes.append( (axis - axis.min() / axis.max() - axis.min()) )
+        self.samples = Motion.from_separate_axes(normalized_axes[0], normalized_axes[1], normalized_axes[2]).samples
+
+    def normalize_global(self):
+        self.samples = ((self.samples - self.samples.min()) / (self.samples.max() - self.samples.min()))
 
     def save_as_plot(self, savefile: str):
         fig, ax = plt.subplots()

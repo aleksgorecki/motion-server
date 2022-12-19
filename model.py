@@ -7,15 +7,15 @@ from motion import Motion
 from typing import Dict, List
 
 
-MOTION_LEN = 100
-CLASSES = ["xneg", "xpos", "yneg", "ypos", "zneg", "zpos"]
-DATASET_PATH_H5 = "./prototype_augmented_dataset.hdf5"
-DATASET_VAL_PATH_H5 = "./prototype_augmented_dataset_val.hdf5"
+MOTION_LEN = 120
+CLASSES = ["nothing", "x_negative", "x_positive", "y_negative", "y_positive", "z_negative", "z_positive"]
+DATASET_PATH_H5 = "./basic_dataset.hdf5"
+DATASET_VAL_PATH_H5 = "./basic_dataset_val.hdf5"
 MODEL_SAVE_PATH = "./model_latest.h5"
-EPOCHS = 30
+EPOCHS = 200
 
 
-def get_prototype_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLASSES) ) -> tf.keras.Sequential:
+def get_prototype_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLASSES)) -> tf.keras.Sequential:
     model = tf.keras.Sequential(layers=[
         tf.keras.Input(shape=(1, motion_len, 3)),
 
@@ -24,7 +24,6 @@ def get_prototype_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLA
 
         tf.keras.layers.Conv1D(16, kernel_size=(3), strides=(1), activation="relu"),
         tf.keras.layers.Dropout(rate=0.2),
-
 
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dropout(rate=0.3),
