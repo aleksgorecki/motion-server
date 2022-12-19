@@ -12,21 +12,19 @@ CLASSES = ["xneg", "xpos", "yneg", "ypos", "zneg", "zpos"]
 DATASET_PATH_H5 = "./prototype_augmented_dataset.hdf5"
 DATASET_VAL_PATH_H5 = "./prototype_augmented_dataset_val.hdf5"
 MODEL_SAVE_PATH = "./model_latest.h5"
-EPOCHS = 120
+EPOCHS = 30
 
 
 def get_prototype_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLASSES) ) -> tf.keras.Sequential:
     model = tf.keras.Sequential(layers=[
         tf.keras.Input(shape=(1, motion_len, 3)),
 
-        tf.keras.layers.Conv1D(2, kernel_size=(3), strides=(1), activation="relu"),
-        tf.keras.layers.Dropout(rate=0.2),
-
-        tf.keras.layers.Conv1D(4, kernel_size=(3), strides=(1), activation="relu"),
-        tf.keras.layers.Dropout(rate=0.2),
-
         tf.keras.layers.Conv1D(8, kernel_size=(3), strides=(1), activation="relu"),
         tf.keras.layers.Dropout(rate=0.2),
+
+        tf.keras.layers.Conv1D(16, kernel_size=(3), strides=(1), activation="relu"),
+        tf.keras.layers.Dropout(rate=0.2),
+
 
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dropout(rate=0.3),
@@ -40,7 +38,7 @@ def run_prediction(model: tf.keras.Sequential, motion: Motion, labels=None) -> D
     if labels is None:
         labels = CLASSES
 
-    input_arr = motion.get_array()
+    input_arr = np.expand_dims(motion.get_array(), axis=0)
     predictions = model(input_arr)
 
     argmax = np.argmax(predictions[0])
@@ -72,8 +70,8 @@ if __name__ == "__main__":
     dataset = dataset.to_tf_dataset()
     val_dataset = val_dataset.to_tf_dataset()
 
-    dataset = dataset.batch(32)
-    val_dataset = val_dataset.batch(32)
+    dataset = dataset.batch(8)
+    val_dataset = val_dataset.batch(8)
 
     model.fit(x=dataset, epochs=EPOCHS, validation_data=val_dataset, shuffle=True)
     model.save(MODEL_SAVE_PATH, save_format="h5")
