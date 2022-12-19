@@ -1,19 +1,14 @@
 from flask import Flask, request
-from matplotlib import pyplot as plt
-import os
-import pathlib
-import json
 import time
-from model import *
-from data_processing import *
-
-
+import json
+import model
+from motion import Motion
+import os
+import tensorflow as tf
 
 
 app = Flask(__name__)
-
-
-
+prediction_model = tf.keras.models.load_model(model.MODEL_SAVE_PATH)
 
 @app.route("/")
 def check_server():
@@ -25,8 +20,8 @@ def new_recording():
     data = request.json
 
     motion_class = data["class"]
-
-    class_dir = os.path.join(DATASET_DIR, motion_class)
+    dataset_dir = data["dataset"]
+    class_dir = os.path.join(dataset_dir, motion_class)
     os.makedirs(class_dir, exist_ok=True)
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -38,32 +33,21 @@ def new_recording():
     
     return "OK"
 
+
 @app.route("/predict", methods=["POST"])
 def predict():
 
     data = request.json
-    motion = Motion.from_json(data)
-    motion.crop(motion.get_global_extremum_position(), 40)
-    motion.filter_high_frequencies()
-    motion.save_as_bitmap(temp_filename)
+    received_sample = Motion.from_json(data)
+    received_sample.crop(received_sample.get_global_extremum_position(), model.MOTION_LEN//2)
+    prediction_result = model.run_prediction(prediction_model, received_sample, model.CLASSES)
 
-    prediction_result = run_prediction(model, temp_filename, BitmapModel.labels)
-    
     return app.response_class(
         response=json.dumps(prediction_result),
         status=200,
         mimetype="application/json"
     )
 
-DATASET_DIR = "dataset"
-temp_filename = "./received_bitmap_latest.bmp"
-
-model = BitmapModel.get_prototype()
-model.load_weights("./weights_latest_bitmap.h5")
 
 if __name__ == "__main__":
-    if os.path.exists(DATASET_DIR):
-        if (pathlib.Path(DATASET_DIR)).is_file():
-            raise Exception("Dataset dir is a file")
-        
     app.run(host="0.0.0.0", port=8080)

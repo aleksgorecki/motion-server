@@ -1,5 +1,7 @@
 from __future__ import annotations
 import json
+
+import PIL
 import numpy as np
 from PIL import Image
 from numpy.typing import NDArray, ArrayLike
@@ -25,6 +27,11 @@ class Motion:
         return Motion(
             three_channel_array
         )
+
+    @staticmethod
+    def from_bitmap(im: PIL.Image.Image):
+        arr = np.asarray(im, dtype=float)
+        return Motion(arr)
 
     def get_copy(self) -> Motion:
         return Motion(np.array(self.samples))
@@ -121,3 +128,4 @@ class Motion:
         ax.set_ylabel("acceleration m/s^2")
         ax.set_xlabel("sample number")
         fig.savefig(savefile)
+        plt.close(fig)
