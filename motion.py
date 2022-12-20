@@ -17,8 +17,8 @@ class Motion:
     @staticmethod
     def from_json(json_object) -> Motion:
         x = json_object['x']
-        z = json_object['y']
-        y = json_object['z']
+        y = json_object['y']
+        z = json_object['z']
         three_channel_array = np.empty(shape=(1, len(x), 3))
         for sample in range(len(x)):
             three_channel_array[0][sample][0] = x[sample]

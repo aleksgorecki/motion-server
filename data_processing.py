@@ -84,7 +84,7 @@ class MotionDataset:
             for n, sample in enumerate(self.dataset[class_name]):
                 sample.crop(sample.get_global_extremum_position(), 50)
                 sample.low_pass_filter(5)
-                savefile = os.path.join(class_dir, f"{n}.bmp")
+                savefile = os.path.join(class_dir, f"{n}.json")
                 sample.save_as_json(savefile)
 
     def to_plots(self, output_dir: str) -> None:
@@ -176,7 +176,18 @@ class MotionDataset:
 
 
 if __name__ == "__main__":
-    d = MotionDataset.from_json("./basic2")
+    # for classdir in os.listdir("basic2"):
+    #     for sample in os.listdir(os.path.join("basic2", classdir)):
+    #         with open(os.path.join("basic2", classdir, sample), "r") as f:
+    #             obj = json.load(f)
+    #             z = obj["y"]
+    #             y = obj["z"]
+    #             obj["z"] = z
+    #             obj["y"] = y
+    #             os.makedirs(os.path.join("basic2fixed", classdir), exist_ok=True)
+    #             with open(os.path.join("basic2fixed", classdir, sample), "w") as of:
+    #                 json.dump(obj, of, indent=4)
+    d = MotionDataset.from_json("./basic2fixed")
     d.crop_samples(120)
     datasets = d.split(0.2)
     train, val = datasets
