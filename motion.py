@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-
+from typing import Tuple
 import PIL
 import numpy as np
 from PIL import Image
@@ -89,7 +89,7 @@ class Motion:
     def scale_values(self, factor: float) -> None:
         self.samples = self.samples * factor
 
-    def horizontal_shift(self, ratio: float):
+    def horizontal_shift(self, ratio: float) -> None:
         new_arr = np.zeros(shape=self.samples.shape)
         threshold_idx = abs(int(ratio * len(self)))
         if ratio < 0:
@@ -98,7 +98,7 @@ class Motion:
             new_arr[0][threshold_idx:] = self.samples[0][0:len(self) - threshold_idx]
         self.samples = new_arr
 
-    def low_pass_filter(self, kernel_size: int = 5):
+    def low_pass_filter(self, kernel_size: int = 5) -> None:
         axis_columns = (self.get_x(), self.get_y(), self.get_z())
         kernel = np.ones(kernel_size) / kernel_size
         filtered_columns = [np.convolve(column, kernel, mode="same") for column in axis_columns]
@@ -128,13 +128,13 @@ class Motion:
         im = Image.fromarray(scaled_arr, mode="RGB")
         im.save(savefile, format="BMP")
 
-    def normalize_separate(self):
+    def normalize_separate(self) -> None:
         normalized_axes = []
         for axis in (self.get_x(), self.get_y(), self.get_z()):
             normalized_axes.append( (axis - axis.min() / axis.max() - axis.min()) )
         self.samples = Motion.from_separate_axes(normalized_axes[0], normalized_axes[1], normalized_axes[2]).samples
 
-    def normalize_global(self):
+    def normalize_global(self) -> None:
         self.samples = ((self.samples - self.samples.min()) / (self.samples.max() - self.samples.min()))
 
     def save_as_plot(self, savefile: str):
@@ -147,3 +147,40 @@ class Motion:
         ax.set_xlabel("sample number")
         fig.savefig(savefile)
         plt.close(fig)
+
+    def get_derivative(self) -> Motion:
+        x, y, z = self.get_x(), self.get_y(), self.get_z()
+        x = np.diff(x) / 1.0
+        y = np.diff(y) / 1.0
+        z = np.diff(z) / 1.0
+        return Motion.from_separate_axes(x, y, z)
+
+    def abs(self) -> None:
+        self.samples = np.abs(self.samples)
+
+    def get_integral(self) -> Motion:
+        x, y, z = self.get_x(), self.get_y(), self.get_z()
+        x = np.cumsum(x)
+        y = np.cumsum(y)
+        z = np.cumsum(z)
+        return Motion.from_separate_axes(x, y, z)
+
+    def get_standard_deviation(self) -> Tuple[float, float, float]:
+        x, y, z = self.get_x(), self.get_y(), self.get_z()
+        x = np.std(x)
+        y = np.std(y)
+        z = np.std(z)
+        return float(x), float(y), float(z)
+
+    def get_standard_deviation_global(self) -> float:
+        std = np.std(self.samples)
+        return float(std)
+
+
+if __name__ == "__main__":
+    with open("./basic2fixed/x_positive/x_positive_20221219_152944.json", "r") as f:
+        m = Motion.from_json(json.load(f))
+        m.save_as_plot("test_org.jpg")
+
+        d = m.get_derivative()
+        d.save_as_plot("test_der.jpg")
