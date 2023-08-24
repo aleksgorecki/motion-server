@@ -2,6 +2,8 @@ import tensorflow as tf
 import os
 import keras_preprocessing.image
 import numpy as np
+from PIL import ImageFont
+
 from data_processing import MotionDataset
 from motion import Motion
 from typing import Dict, List
@@ -25,6 +27,57 @@ def get_prototype_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLA
         tf.keras.layers.Dropout(rate=0.3),
 
         tf.keras.layers.Conv1D(32, kernel_size=(3), strides=(1), activation="relu"),
+        tf.keras.layers.Dropout(rate=0.3),
+
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dropout(rate=0.4),
+        tf.keras.layers.Dense(num_classes, activation="softmax")
+    ])
+    return model
+
+
+def get_no_dropout_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLASSES)):
+        model = tf.keras.Sequential(layers=[
+            tf.keras.Input(shape=(1, motion_len, 3)),
+
+            tf.keras.layers.Conv1D(16, kernel_size=(3), strides=(1), activation="relu"),
+
+            tf.keras.layers.Conv1D(32, kernel_size=(3), strides=(1), activation="relu"),
+
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(num_classes, activation="softmax")
+        ])
+        return model
+
+
+def get_3layer_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLASSES)) -> tf.keras.Sequential:
+    model = tf.keras.Sequential(layers=[
+        tf.keras.Input(shape=(1, motion_len, 3)),
+
+        tf.keras.layers.Conv1D(16, kernel_size=(3), strides=(1), activation="relu"),
+        tf.keras.layers.Dropout(rate=0.3),
+
+        tf.keras.layers.Conv1D(32, kernel_size=(3), strides=(1), activation="relu"),
+        tf.keras.layers.Dropout(rate=0.3),
+
+        tf.keras.layers.Conv1D(64, kernel_size=(3), strides=(1), activation="relu"),
+        tf.keras.layers.Dropout(rate=0.3),
+
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dropout(rate=0.4),
+        tf.keras.layers.Dense(num_classes, activation="softmax")
+    ])
+    return model
+
+
+def get_smaller_model(motion_len: int = MOTION_LEN, num_classes: int = len(CLASSES)) -> tf.keras.Sequential:
+    model = tf.keras.Sequential(layers=[
+        tf.keras.Input(shape=(1, motion_len, 3)),
+
+        tf.keras.layers.Conv1D(8, kernel_size=(3), strides=(1), activation="relu"),
+        tf.keras.layers.Dropout(rate=0.3),
+
+        tf.keras.layers.Conv1D(16, kernel_size=(3), strides=(1), activation="relu"),
         tf.keras.layers.Dropout(rate=0.3),
 
         tf.keras.layers.Flatten(),
@@ -61,29 +114,3 @@ def convert_to_tflite(source_model_path: str, new_model_path: str) -> None:
     tflite_model = converter.convert()
     with open(new_model_path, 'wb') as f:
         f.write(tflite_model)
-
-
-if __name__ == "__main__":
-
-    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
-
-    model: tf.keras.Sequential = get_prototype_model()
-    opt = tf.keras.optimizers.Adam(learning_rate=0.0001)
-    model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
-
-    dataset = MotionDataset.from_hdf5(DATASET_PATH_H5)
-    val_dataset = MotionDataset.from_hdf5(DATASET_VAL_PATH_H5)
-
-    dataset.even_sample_numbers_in_classes()
-    val_dataset.even_sample_numbers_in_classes()
-
-    dataset = dataset.to_tf_dataset()
-    val_dataset = val_dataset.to_tf_dataset()
-
-    dataset = dataset.batch(8)
-    val_dataset = val_dataset.batch(8)
-
-    model.fit(x=dataset, epochs=EPOCHS, validation_data=val_dataset, shuffle=True)
-    model.save(MODEL_SAVE_PATH, save_format="h5")
-
-    convert_to_tflite(MODEL_SAVE_PATH, TFLITE_SAVE_PATH)

@@ -10,6 +10,7 @@ import tensorflow as tf
 app = Flask(__name__)
 prediction_model = tf.keras.models.load_model(model.MODEL_SAVE_PATH)
 
+
 @app.route("/")
 def check_server():
     return "OK"

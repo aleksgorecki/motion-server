@@ -1,11 +1,14 @@
 from __future__ import annotations
 import json
+import os
 from typing import Tuple
 import PIL
 import numpy as np
 from PIL import Image
 from numpy.typing import NDArray, ArrayLike
 from matplotlib import pyplot as plt
+
+import data_processing
 
 
 class Motion:
@@ -60,7 +63,7 @@ class Motion:
     def get_global_extremum_position(self) -> int:
         max_pos = np.unravel_index(self.samples.argmax(), shape=self.samples.shape)
         max_val = self.samples[max_pos]
-        min_pos =  np.unravel_index(self.samples.argmin(), shape=self.samples.shape)
+        min_pos = np.unravel_index(self.samples.argmin(), shape=self.samples.shape)
         min_val = self.samples[min_pos]
 
         if max_val > abs(min_val):
@@ -175,12 +178,3 @@ class Motion:
     def get_standard_deviation_global(self) -> float:
         std = np.std(self.samples)
         return float(std)
-
-
-if __name__ == "__main__":
-    with open("./basic2fixed/x_positive/x_positive_20221219_152944.json", "r") as f:
-        m = Motion.from_json(json.load(f))
-        m.save_as_plot("test_org.jpg")
-
-        d = m.get_derivative()
-        d.save_as_plot("test_der.jpg")

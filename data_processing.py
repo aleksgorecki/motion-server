@@ -173,35 +173,3 @@ class MotionDataset:
         for class_name in self.dataset.keys():
             for n, _ in enumerate(self.dataset[class_name]):
                 self.dataset[class_name][n].normalize_global()
-
-
-if __name__ == "__main__":
-    # for classdir in os.listdir("basic2"):
-    #     for sample in os.listdir(os.path.join("basic2", classdir)):
-    #         with open(os.path.join("basic2", classdir, sample), "r") as f:
-    #             obj = json.load(f)
-    #             z = obj["y"]
-    #             y = obj["z"]
-    #             obj["z"] = z
-    #             obj["y"] = y
-    #             os.makedirs(os.path.join("basic2fixed", classdir), exist_ok=True)
-    #             with open(os.path.join("basic2fixed", classdir, sample), "w") as of:
-    #                 json.dump(obj, of, indent=4)
-    d = MotionDataset.from_json("./basic2fixed")
-    d.crop_samples(120)
-    datasets = d.split(0.2)
-    train, val = datasets
-
-    train.to_hdf5("./basic_dataset.hdf5")
-    train.to_plots("./basic_plots")
-
-    val.to_hdf5("./basic_dataset_val.hdf5")
-    val.to_plots("./basic_plots_val")
-
-    train.normalize()
-    train.to_hdf5("./basic_dataset_norm.hdf5")
-    train.to_plots("./basic_plots_norm")
-
-    val.normalize()
-    val.to_hdf5("./basic_dataset_val_norm.hdf5")
-    val.to_plots("./basic_plots_val_norm")
