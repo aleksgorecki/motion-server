@@ -25,7 +25,7 @@ Their matrix form may be also saved as an image, in which the values of XYZ acce
 Motions are represented by a `Motion` class, defined in `motion.py`.
 
 ### Classes and Datasets
-
+l
 Recognized motions can be divided into 7 classes:
 - nothing
 - x_negative (XNEG)
@@ -57,4 +57,4 @@ By default the server will run on the address assigned to the device by the loca
 
 ## Models
 
-The project uses small, 1D convolutional neural networks. The default model may be created by calling the `get_prototype_model` function inside `model.py`.
+The project uses small, 1D convolutional neural networks. The default model may be created by calling the `get_prototype_model` function inside `model.py`. It consists of two convolutional layers and three dropout layers. This model can be also loaded from the `model_latest.h5` file.
