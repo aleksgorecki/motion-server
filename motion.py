@@ -19,17 +19,15 @@ class Motion:
 
     @staticmethod
     def from_json(json_object) -> Motion:
-        x = json_object['x']
-        y = json_object['y']
-        z = json_object['z']
+        x = json_object["x"]
+        y = json_object["y"]
+        z = json_object["z"]
         three_channel_array = np.empty(shape=(1, len(x), 3))
         for sample in range(len(x)):
             three_channel_array[0][sample][0] = x[sample]
             three_channel_array[0][sample][1] = y[sample]
             three_channel_array[0][sample][2] = z[sample]
-        return Motion(
-            three_channel_array
-        )
+        return Motion(three_channel_array)
 
     @staticmethod
     def from_separate_axes(x: NDArray, y: NDArray, z: NDArray):
@@ -52,13 +50,13 @@ class Motion:
         return self.samples.shape[1]
 
     def get_x(self) -> NDArray:
-        return self.samples[0][:,0]
+        return self.samples[0][:, 0]
 
     def get_y(self) -> NDArray:
-        return self.samples[0][:,1]
+        return self.samples[0][:, 1]
 
     def get_z(self) -> NDArray:
-        return self.samples[0][:,2]
+        return self.samples[0][:, 2]
 
     def get_global_extremum_position(self) -> int:
         max_pos = np.unravel_index(self.samples.argmax(), shape=self.samples.shape)
@@ -86,7 +84,9 @@ class Motion:
             upper_bound = full_axis_len
 
         cropped_arr = np.zeros(shape=(1, 2 * half_span, 3))
-        cropped_arr[0][0 + lower_padding:2 * half_span - upper_padding][:] = self.samples[0][lower_bound:upper_bound][:]
+        cropped_arr[0][0 + lower_padding : 2 * half_span - upper_padding][
+            :
+        ] = self.samples[0][lower_bound:upper_bound][:]
         self.samples = cropped_arr
 
     def scale_values(self, factor: float) -> None:
@@ -96,26 +96,30 @@ class Motion:
         new_arr = np.zeros(shape=self.samples.shape)
         threshold_idx = abs(int(ratio * len(self)))
         if ratio < 0:
-            new_arr[0][0:len(self) - threshold_idx] = self.samples[0][threshold_idx:]
+            new_arr[0][0 : len(self) - threshold_idx] = self.samples[0][threshold_idx:]
         else:
-            new_arr[0][threshold_idx:] = self.samples[0][0:len(self) - threshold_idx]
+            new_arr[0][threshold_idx:] = self.samples[0][0 : len(self) - threshold_idx]
         self.samples = new_arr
 
     def low_pass_filter(self, kernel_size: int = 5) -> None:
         axis_columns = (self.get_x(), self.get_y(), self.get_z())
         kernel = np.ones(kernel_size) / kernel_size
-        filtered_columns = [np.convolve(column, kernel, mode="same") for column in axis_columns]
+        filtered_columns = [
+            np.convolve(column, kernel, mode="same") for column in axis_columns
+        ]
         self.samples = np.array([np.column_stack(filtered_columns)])
 
     def get_array(self) -> NDArray:
         return np.array(self.samples)
 
     def save_as_json(self, savefile: str) -> None:
-        json_object = dict({
-            "x": self.get_x().tolist(),
-            "y": self.get_y().tolist(),
-            "z": self.get_z().tolist()
-        })
+        json_object = dict(
+            {
+                "x": self.get_x().tolist(),
+                "y": self.get_y().tolist(),
+                "z": self.get_z().tolist(),
+            }
+        )
         with open(savefile, "w") as of:
             json.dump(json_object, of, indent=4)
 
@@ -134,11 +138,15 @@ class Motion:
     def normalize_separate(self) -> None:
         normalized_axes = []
         for axis in (self.get_x(), self.get_y(), self.get_z()):
-            normalized_axes.append( (axis - axis.min() / axis.max() - axis.min()) )
-        self.samples = Motion.from_separate_axes(normalized_axes[0], normalized_axes[1], normalized_axes[2]).samples
+            normalized_axes.append((axis - axis.min() / axis.max() - axis.min()))
+        self.samples = Motion.from_separate_axes(
+            normalized_axes[0], normalized_axes[1], normalized_axes[2]
+        ).samples
 
     def normalize_global(self) -> None:
-        self.samples = ((self.samples - self.samples.min()) / (self.samples.max() - self.samples.min()))
+        self.samples = (self.samples - self.samples.min()) / (
+            self.samples.max() - self.samples.min()
+        )
 
     def save_as_plot(self, savefile: str):
         fig, ax = plt.subplots()

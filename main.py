@@ -31,22 +31,23 @@ def new_recording():
 
     with open(path_to_save, "w") as file:
         json.dump(data, file, indent=4)
-    
+
     return "OK"
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-
     data = request.json
     received_sample = Motion.from_json(data)
-    received_sample.crop(received_sample.get_global_extremum_position(), model.MOTION_LEN//2)
-    prediction_result = model.run_prediction(prediction_model, received_sample, model.CLASSES)
+    received_sample.crop(
+        received_sample.get_global_extremum_position(), model.MOTION_LEN // 2
+    )
+    prediction_result = model.run_prediction(
+        prediction_model, received_sample, model.CLASSES
+    )
 
     return app.response_class(
-        response=json.dumps(prediction_result),
-        status=200,
-        mimetype="application/json"
+        response=json.dumps(prediction_result), status=200, mimetype="application/json"
     )
 
 

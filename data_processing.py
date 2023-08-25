@@ -33,7 +33,9 @@ class MotionDataset:
         for class_dir in class_dirs:
             class_name = class_dir
             class_dir = os.path.join(dataset_path, class_dir)
-            class_samples = [os.path.join(class_dir, sample) for sample in os.listdir(class_dir)]
+            class_samples = [
+                os.path.join(class_dir, sample) for sample in os.listdir(class_dir)
+            ]
             class_file_mapping.update({class_name: class_samples})
         return class_file_mapping
 
@@ -45,11 +47,15 @@ class MotionDataset:
     def crop_samples(self, crop_size: int, filter_kernel_size: int = None):
         for class_name in self.dataset.keys():
             for n, sample in enumerate(self.dataset[class_name]):
-                self.dataset[class_name][n].crop(sample.get_global_extremum_position(), crop_size//2)
+                self.dataset[class_name][n].crop(
+                    sample.get_global_extremum_position(), crop_size // 2
+                )
                 if filter_kernel_size is not None:
                     self.dataset[class_name][n].low_pass_filter(filter_kernel_size)
 
-    def augment_dataset(self, shift_ratios: List[float], kernel_sizes: List[int]) -> None:
+    def augment_dataset(
+        self, shift_ratios: List[float], kernel_sizes: List[int]
+    ) -> None:
         for class_name in self.dataset.keys():
             augmented_samples = []
             for n, sample in enumerate(self.dataset[class_name]):
@@ -90,7 +96,7 @@ class MotionDataset:
     def to_plots(self, output_dir: str) -> None:
         output_dir = os.path.realpath(output_dir)
         os.makedirs(output_dir, exist_ok=True)
-        matplotlib.use('Agg')
+        matplotlib.use("Agg")
         for class_name in self.dataset.keys():
             class_dir = os.path.join(output_dir, class_name)
             os.makedirs(class_dir, exist_ok=True)
@@ -117,7 +123,7 @@ class MotionDataset:
         for class_name in bitmap_mapping.keys():
             samples = []
             for image in bitmap_mapping[class_name]:
-                with (PIL.Image.open(image, formats=["BMP"])) as im:
+                with PIL.Image.open(image, formats=["BMP"]) as im:
                     samples.append(Motion.from_bitmap(im))
             dataset.update({class_name: samples})
         return MotionDataset(dataset)
@@ -141,7 +147,9 @@ class MotionDataset:
         return MotionDataset(dataset)
 
     def even_sample_numbers_in_classes(self, shuffle: bool = True) -> None:
-        smallest_class_len = min([len(samples) for samples in list(self.dataset.values())])
+        smallest_class_len = min(
+            [len(samples) for samples in list(self.dataset.values())]
+        )
         for class_name in self.get_classes():
             if shuffle:
                 random.shuffle(self.dataset[class_name])
@@ -159,14 +167,16 @@ class MotionDataset:
         dataset = tf.data.Dataset.from_tensor_slices((inputs, targets))
         return dataset
 
-    def split(self, ratio: float, shuffle: bool = True) -> (MotionDataset, MotionDataset):
+    def split(
+        self, ratio: float, shuffle: bool = True
+    ) -> (MotionDataset, MotionDataset):
         first, second = dict(), dict()
         for class_name in self.dataset.keys():
             samples = self.dataset[class_name].copy()
             if shuffle:
                 random.shuffle(samples)
-            first.update({class_name: samples[int(ratio * len(samples)):]})
-            second.update({class_name: samples[:int(ratio * len(samples))]})
+            first.update({class_name: samples[int(ratio * len(samples)) :]})
+            second.update({class_name: samples[: int(ratio * len(samples))]})
         return MotionDataset(first), MotionDataset(second)
 
     def normalize(self) -> None:
