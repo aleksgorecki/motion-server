@@ -2,19 +2,21 @@
 
 A repository containing the code of the HTTP server and tensorflow neural network model used in the 'Motion Gestures for Android' project.
 
-## Table of Contents
-- [Table of Contents](#table-of-contents)
+## Table of contents
+- [Table of contents](#table-of-contents)
 - [Motions](#motions)
   - [Classes and Datasets](#classes-and-datasets)
 - [Server](#server)
 - [Models](#models)
+
 
 ## Motions
 
 Motions are represented by 3 lists of floating point numbers. These lists represent the values from 3 possible axes (X, Y, Z) of motion recorded by the smartphone's accelerometer. This data may be also arranged in a matrix, since all the lists have the same length.
 
 Motions can be visualized on a 2D plot:
-![](readme_res/motionplot.jpg)
+
+<img src="readme_res/motionplot.jpg" height="380" height="30"/>
 
 Their matrix form may be also saved as an image, in which the values of XYZ acceleration are converted to RGB color channels:  
 <!-- ![](readme_res/motionimage.bmp) -->
