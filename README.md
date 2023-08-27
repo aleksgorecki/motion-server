@@ -1,14 +1,13 @@
-# Motion Server
+<h1> Motion Server </h1>
 
 A repository containing the code of the HTTP server and tensorflow neural network model used in the 'Motion Gestures for Android' project.
 
 ## Table of Contents
-- [Motion Server](#motion-server)
-  - [Table of Contents](#table-of-contents)
-  - [Motions](#motions)
-    - [Classes and Datasets](#classes-and-datasets)
-  - [Server](#server)
-  - [Models](#models)
+- [Table of Contents](#table-of-contents)
+- [Motions](#motions)
+  - [Classes and Datasets](#classes-and-datasets)
+- [Server](#server)
+- [Models](#models)
 
 ## Motions
 
